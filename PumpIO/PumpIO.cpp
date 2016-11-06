@@ -6,6 +6,7 @@ int main()
 {
 	CRendezvous start("StartRendezvous", 3);
 	CRendezvous end("EndRendezvous", 3);
+	CMutex pumpScreenMutex("PumpScreen");
 
 	printf("Hello from pump IO process....\n");
 	Sleep(2000);

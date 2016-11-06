@@ -2,17 +2,26 @@
 #include "C:/RTExamples/rt.h"
 #include "../Constants.h"
 
+#ifndef __FuelTank__
+#define __FuelTank__
+
 // Monitor type class
 class FuelTank {
 private:
-	struct fuelTankData;
+	struct fuelTankData *tank;
+	CDataPool *tankDataPool;
 	CMutex *mutex;
 
 public:
 	// constructor and destructor
 	FuelTank();
-	int read(int tank);
-	bool fill(int tank);
-	bool increment(int tank);
-	bool decrement(int tank);
+	~FuelTank(){ delete mutex; delete tankDataPool; }
+	float read(int fuelType);
+	void fill(int fuelType);
+	bool dispense(int fuelType, float fuelAmount);
+	bool increment(int fuelType);
+	bool decrement(int fuelType);
+	void setCost(int fuelType, float cost);
 };
+
+#endif

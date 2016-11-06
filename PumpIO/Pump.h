@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "C:/RTExamples/rt.h"
 #include "../Constants.h"
+#include "../GasStationComputer/FuelTank.h"
 
 #ifndef __Pump__
 #define __Pump__
@@ -14,8 +15,11 @@ private:
 	struct fuelTankData *fuelData;
 	CTypedPipe<struct customerData> *myPipe;
 	CMutex *myPipeMutex;
+	CMutex *screenMutex;
 	CSemaphore *ps;
 	CSemaphore *cs;
+	FuelTank *tank;
+
 public:
 	Pump(int pumpID);
 	int readCustomerPipelineThread(void *ThreadArgs);
