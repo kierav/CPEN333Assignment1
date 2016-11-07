@@ -48,14 +48,30 @@ void setUpScreen(){
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	MOVE_CURSOR(0, 20);
 	cout << "KEYBOARD Commands:" << endl;
-	cout << "D + i: dispense fuel to pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "Q + i: reject customer at pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "R + i: refill fuel tank i (0 to" << NTANKS << ")" << endl;
-	cout << "C + i: change cost of fuel tank i (0 to" << NTANKS << ")" << endl;
+	cout << "D + i: dispense fuel to pump i (0 to " << NPUMPS << ")" << endl;
+	cout << "Q + i: reject customer at pump i (0 to " << NPUMPS << ")" << endl;
+	cout << "R + i: refill fuel tank i (0 to " << NTANKS << ")" << endl;
+	cout << "C + i: change cost of fuel tank i (0 to " << NTANKS << ")" << endl;
 	cout << "S + 1: display all transactions until now" << endl;
 	CURSOR_ON();
 }
+void printTransactionsHistory(){
+	screenMutex.Wait();
+	MOVE_CURSOR(0, 28);
+	cout << "============================================ \n";
+	cout << "Transaction History for Today\n";
+	for (auto v : history)
+	{
+		cout << "Name:" << v.customerName;
+		cout << ", Credit Card:" << v.creditCard;
+		cout << ", Dispensed Fuel:" << v.dispensedFuel;
+		cout << ", Final Cost:" << v.finalCost;
+		cout << ", Fuel Type:" << v.fuelType;
+		cout << ", End Time:" << v.endTime << "\n";
+	}
 
+	screenMutex.Signal();
+}
 void readKeyCmds(){
 	// one key has already been pressed
 	int cmd1;
@@ -90,6 +106,7 @@ void readKeyCmds(){
 		break;
 	case 'S':
 		//TODO
+		printTransactionsHistory();
 		break;
 	default:
 		screenMutex.Wait();
@@ -161,6 +178,8 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		complete.dispensedFuel = myPool->dispensedFuel;
 		complete.finalCost = myPool->finalCost;
 		complete.endTime = myPool->transactionEndTime;
+		//record the complete transaction into history variable to display in RAM if needed
+		history.push_back(complete);
 		cs.Signal();
 
 		screenMutex.Wait();
