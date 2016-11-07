@@ -26,6 +26,8 @@ void drawFuel(int fuelTank, float amount){
 	for (int i = 0; i < numBars; i++){
 		cout << "|";
 	}
+	MOVE_CURSOR(6 + fuelTank * 14, 12);
+	printf("%.2f", amount);
 	TEXT_COLOUR(15, 0);
 	MOVE_CURSOR(0, 26);
 	CURSOR_ON();
@@ -48,10 +50,10 @@ void setUpScreen(){
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	MOVE_CURSOR(0, 20);
 	cout << "KEYBOARD Commands:" << endl;
-	cout << "D + i: dispense fuel to pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "Q + i: reject customer at pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "R + i: refill fuel tank i (0 to" << NTANKS << ")" << endl;
-	cout << "C + i: change cost of fuel tank i (0 to" << NTANKS << ")" << endl;
+	cout << "D + i: dispense fuel to pump i (1 to " << NPUMPS << ")" << endl;
+	cout << "Q + i: reject customer at pump i (1 to " << NPUMPS << ")" << endl;
+	cout << "R + i: refill fuel tank i (1 to " << NTANKS << ")" << endl;
+	cout << "C + i: change cost of fuel tank i (1 to " << NTANKS << ")" << endl;
 	cout << "S + 1: display all transactions until now" << endl;
 	CURSOR_ON();
 }
@@ -60,19 +62,22 @@ void readKeyCmds(){
 	// one key has already been pressed
 	int cmd1;
 	int cmd2;
+	screenMutex.Wait();
+	MOVE_CURSOR(0, 26);
 	cmd1 = _getche();
 	cmd1 = toupper(cmd1);
-	cmd2 = _getche();
+	cmd2 = _getche() - '0' - 1;
+	screenMutex.Signal();
 	float cost;
 
 	switch (cmd1){
 	case 'D':
-		if (cmd2 < NPUMPS){
+		if (cmd2 < NPUMPS && cmd2 >= 0){
 			dispense[cmd2] = TRUE;
 		}
 		break;
 	case 'Q':
-		if (cmd2 < NPUMPS){
+		if (cmd2 < NPUMPS && cmd2 >= 0){
 			reject[cmd2] = TRUE;
 		}
 		break;
@@ -81,7 +86,6 @@ void readKeyCmds(){
 		break;
 	case 'C':
 		screenMutex.Wait();
-		TEXT_COLOUR(15, 0);
 		MOVE_CURSOR(0, 27);
 		cout << "Enter new cost:" << endl;
 		cin >> cost; //TODO: maybe make this safer
@@ -93,15 +97,20 @@ void readKeyCmds(){
 		break;
 	default:
 		screenMutex.Wait();
-		TEXT_COLOUR(15, 0);
-		MOVE_CURSOR(0, 26);
-		cout << "Invalid command: " << cmd1 << " + " << cmd2 << endl;
+		MOVE_CURSOR(0, 27);
+		printf("Invalid command");
+		fflush(stdout);
 		screenMutex.Signal();
 	}
 
 	Sleep(300);
 	screenMutex.Wait();
 	MOVE_CURSOR(0, 26);
+	CURSOR_OFF();
+	printf("                      \n                         \n                  \n");
+	fflush(stdout);
+	MOVE_CURSOR(0, 26);
+	CURSOR_ON();
 	fflush(stdin);
 	screenMutex.Signal();
 }
@@ -114,7 +123,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 	string dataPoolName = "Pump";
 	oss << ID;
 	dataPoolName += oss.str();
-	CDataPool dp(dataPoolName, sizeof(struct pumpData));
+	CDataPool dp("Pump" + oss.str(), sizeof(struct pumpData));
 	struct pumpData *myPool = (struct pumpData *)(dp.LinkDataPool());
 	CSemaphore ps("PS" + oss.str(), 0, 1);
 	CSemaphore cs("CS" + oss.str(), 1, 1);
@@ -129,7 +138,6 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		ps.Wait();
 		screenMutex.Wait();
 		MOVE_CURSOR(0, 16);
-		TEXT_COLOUR(15, 0);
 		printf("%s is at Pump %d\n", myPool->customerName, ID);
 		printf("Credit Card: %d\n", myPool->creditCard);
 		screenMutex.Signal();
@@ -139,15 +147,21 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 			// do nothing
 		}
 		if (dispense[ID - 1] == TRUE){
-			myPool->dispense = TRUE;
-			myPool->rejectCustomer = FALSE;
+			myPool->dispense = 1;
 			dispense[ID - 1] = FALSE;
 			reject[ID - 1] = FALSE;
+			screenMutex.Wait();
+			MOVE_CURSOR(0, 16 + ID);
+			printf("Dispensing fuel at Pump %d\n",ID);
+			screenMutex.Signal();
 		}
 		else {
-			myPool->rejectCustomer = TRUE;
-			myPool->dispense = FALSE;
+			myPool->dispense = 0;
 			reject[ID - 1] = FALSE;
+			screenMutex.Wait();
+			MOVE_CURSOR(0, 16 + ID);
+			printf("Not dispensing fuel at Pump %d\n", ID);
+			screenMutex.Signal();
 		}
 		cs.Signal();
 
@@ -164,9 +178,9 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		cs.Signal();
 
 		screenMutex.Wait();
-		MOVE_CURSOR(0, 16);
+		MOVE_CURSOR(0, 16 + ID);
 		TEXT_COLOUR(15, 0);
-		printf("%s at Pump %d paid %.2f for %.1f L of \n", myPool->customerName, ID);
+		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n",myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
 		screenMutex.Signal();
 	}
 

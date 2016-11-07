@@ -23,8 +23,7 @@ struct pumpData {
 	int creditCard;
 	int fuelType;
 	float fuelAmount;
-	bool dispense;
-	bool rejectCustomer;
+	int dispense;
 	float dispensedFuel;
 	float finalCost;
 	int transactionEndTime;

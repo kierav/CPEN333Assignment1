@@ -13,13 +13,9 @@ Pump::Pump(int pumpID){
 	cs = new CSemaphore("CS" + oss.str(), 1, 1);
 
 	// datapool to store shared data with the GSC
-	CDataPool myPumpDataPool("Pump" + oss.str(), sizeof(struct pumpData));
-	myPumpData = (struct pumpData *)(myPumpDataPool.LinkDataPool());
+	myPumpDataPool  = new CDataPool("Pump" + oss.str(), sizeof(struct pumpData));
+	myPumpData = (struct pumpData *)(myPumpDataPool->LinkDataPool());
 	//printf("Pump %d linked to pump datapool at address %p...\n", myID, myPumpData);
-
-	// datapool to store shared data with the fuel tank
-	CDataPool fuelDataPool("FuelTank", sizeof(struct fuelTankData));
-	fuelData = (struct fuelTankData *)(fuelDataPool.LinkDataPool());
 
 	//printf("Pump %d being constructed...\n", myID);
 	screenMutex = new CMutex("PumpScreen");
@@ -47,7 +43,6 @@ Pump::~Pump(){
 	delete pumpEntryQueue;
 	delete pumpExitQueue;
 	delete myPumpData;
-	delete fuelData;
 	delete myPipe;
 	delete myPipeMutex;
 	delete screenMutex;
@@ -101,38 +96,48 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		Sleep(10);
 		// wait to dispense fuel
 		cs->Wait();
-		if (myPumpData->dispense == FALSE){
+		if (myPumpData->dispense != 1){
 			screenMutex->Wait();
-			MOVE_CURSOR(0, ((myID - 1) * 6));
+			MOVE_CURSOR(40, ((myID - 1) * 6));
 			printf("Customer rejected \n");
 			fflush(stdout);
 			screenMutex->Signal();
+			Sleep(500);
 		}
 		else{
+			screenMutex->Wait();
+			MOVE_CURSOR(40, ((myID - 1) * 6));
+			printf("Dispensing fuel \n");
+			fflush(stdout);
+			screenMutex->Signal();
+			Sleep(500);
+
 			myPumpData->dispensedFuel = 0;
 			float purchaseCost = tank->getCost(myPumpData->fuelType); // cost is set at time of dispense
 			while (myPumpData->fuelAmount - myPumpData->dispensedFuel >= 0.5){
 				if (tank->decrement(myPumpData->fuelType)){
 					myPumpData->dispensedFuel += DISPENSERATE;
 					screenMutex->Wait();
-					MOVE_CURSOR(0, ((myID - 1) * 6 + 2));
+					MOVE_CURSOR(40, ((myID - 1) * 6 + 2));
 					printf("L: %.1f\n", myPumpData->dispensedFuel);
+					MOVE_CURSOR(40, ((myID - 1) * 6 + 3));
 					printf("$: %.2f\n", purchaseCost*myPumpData->dispensedFuel);
 					fflush(stdout);
 					screenMutex->Signal();
 				}
 				else{
 					screenMutex->Wait();
-					MOVE_CURSOR(0, ((myID - 1) * 6 + 1));
+					MOVE_CURSOR(40, ((myID - 1) * 6 + 1));
 					printf("Cannot dispense any more fuel\n");
 					fflush(stdout);
 					screenMutex->Signal();
 					myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
 				}
+				Sleep(50);
 			}
 		}
 		screenMutex->Wait();
-		MOVE_CURSOR(0, ((myID - 1) * 6));
+		MOVE_CURSOR(40, ((myID - 1) * 6));
 		printf("Customer leaving Pump\n");
 		fflush(stdout);
 		screenMutex->Signal();

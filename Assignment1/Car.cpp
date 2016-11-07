@@ -50,7 +50,7 @@ int Car::main(void){
 	//send the data
 	myPipe->Write(&myData);
 	//myPipeMutex->Signal();
-	printf("Customer %s has swiped his car at Pump %d ... \n", myData.customerName, desPump);
+	printf("Customer %s has swiped his card at Pump %d ... \n", myData.customerName, desPump);
 	Sleep(1000);
 	if (myData.fuelType == OCT82)
 		printf("Customer %s has selected fuel grade OCT82... \n", myData.customerName);

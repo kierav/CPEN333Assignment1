@@ -11,8 +11,8 @@ private:
 	int myID;
 	string pumpName;
 	int main(void);
+	CDataPool *myPumpDataPool;
 	struct pumpData *myPumpData;
-	struct fuelTankData *fuelData;
 	CTypedPipe<struct customerData> *myPipe;
 	CMutex *myPipeMutex;
 	CMutex *screenMutex;

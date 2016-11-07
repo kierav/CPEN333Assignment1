@@ -4,6 +4,7 @@ FuelTank::FuelTank(){
 	mutex = new CMutex("FuelMutex");
 	tankDataPool = new CDataPool("FuelTankDataPool", sizeof(struct fuelTankData));
 	tank = (struct fuelTankData *)(tankDataPool->LinkDataPool());
+
 	// tank is initialized to be full by default;
 	for (int i = 0; i < NTANKS; i++){
 		tank->fuelLevels[i] = TANKSIZE;
