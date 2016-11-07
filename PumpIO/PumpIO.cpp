@@ -9,7 +9,6 @@ int main()
 	CMutex pumpScreenMutex("PumpScreen");
 
 	//printf("Hello from pump IO process....\n");
-	Sleep(2000);
 	
 	// Create pump threads
 	Pump *pumps[NPUMPS];

@@ -34,6 +34,7 @@ int main(void){
 	for (i = 0; i < NUM_CUSTOMERS; i++){
 		cars[i] = new Car(customernames[i], (i % 4) + 1);
 		cars[i]->setDesFuel(30 + (5 * i));
+		cars[i]->setFuelGrade((i % 4));
 		cars[i]->Resume();
 		
 	}

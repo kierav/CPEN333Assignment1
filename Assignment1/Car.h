@@ -16,6 +16,7 @@ private:
 	CMutex *myPipeMutex;
 public:
 	Car(char *name, int desPump);
+	~Car();
 	void setDesFuel(float maxDesFuel);
 	void setFuelGrade(int fuelGrade);
 	int main(void);
