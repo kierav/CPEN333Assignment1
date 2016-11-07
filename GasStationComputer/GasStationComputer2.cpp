@@ -1,11 +1,16 @@
 #include 	<stdio.h>
+#include	<iostream>
 #include	<sstream>
+#include	<list>
 #include 	"C:\RTExamples\rt.h"			
 #include	"../Constants.h"
 #include	"FuelTank.h"
 
 FuelTank myTank;
 CMutex screenMutex("GSCScreenMutex");
+bool dispense[NPUMPS];
+bool reject[NTANKS];
+list<struct transaction> history; 
 
 void drawFuel(int fuelTank, float amount){
 	int numBars = int(amount / TANKSIZE * 10);
@@ -37,9 +42,55 @@ void setUpScreen(){
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	MOVE_CURSOR(0, 20);
 	cout << "KEYBOARD Commands:" << endl;
-	cout << "\nD + i: dispense fuel from tank i (0 to" << NTANKS << ")" << endl;
+	cout << "\nD + i: dispense fuel to pump i (0 to" << NPUMPS << ")" << endl;
+	cout << "\nQ + i: reject customer at pump i (0 to" << NPUMPS << ")" << endl;
 	cout << "\nR + i: refill fuel tank i (0 to" << NTANKS << ")" << endl;
 	cout << "\nC + i: change cost of fuel tank i (0 to" << NTANKS << ")" << endl;
+	cout << "\nS + 1: display all transactions until now" << endl;
+}
+
+void readKeyCmds(){
+	// one key has already been pressed
+	int cmd1;
+	int cmd2;
+	cmd1 = _getch();
+	cmd2 = _getch();
+	float cost;
+
+	switch (cmd1){
+	case 'D':
+		if (cmd2 < NPUMPS){
+			dispense[cmd2] = TRUE;
+		}
+		break;
+	case 'Q':
+		if (cmd2 < NPUMPS){
+			reject[cmd2] = TRUE;
+		}
+		break;
+	case 'R':
+		myTank.fill(cmd2);
+		break;
+	case 'C':
+		screenMutex.Wait();
+		TEXT_COLOUR(15, 0);
+		MOVE_CURSOR(0, 25);
+		cout << "Enter new cost:" << endl;
+		cin >> cost; //TODO: maybe make this safer
+		screenMutex.Signal();
+		myTank.setCost(cmd2, cost);
+		break;
+	case 'S':
+		//TODO
+		break;
+	default:
+		screenMutex.Wait();
+		TEXT_COLOUR(15, 0);
+		MOVE_CURSOR(0, 26);
+		cout << "Invalid command" << endl;
+		screenMutex.Signal();
+	}
+
 }
 
 UINT __stdcall pumpThread(void *args)			// args points to any data passed to the child thread
@@ -61,20 +112,55 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 	//screenMutex.Signal();
 	
 	while (1){
+		// wait for a customer to arrive
 		ps.Wait();
 		screenMutex.Wait();
 		MOVE_CURSOR(0, 16);
 		TEXT_COLOUR(15, 0);
-		printf("Customer %d is at Pump %d\n", myPool->customerName, ID);
+		printf("%s is at Pump %d\n", myPool->customerName, ID);
+		printf("Credit Card: %d\n", myPool->creditCard);
 		screenMutex.Signal();
+
+		// dispense fuel or reject customer
+		while (!dispense[ID-1] && !reject[ID-1]) {
+			// do nothing
+		}
+		if (dispense[ID - 1] == TRUE){
+			myPool->dispense = TRUE;
+			myPool->rejectCustomer = FALSE;
+			dispense[ID - 1] = FALSE;
+			reject[ID - 1] = FALSE;
+		}
+		else {
+			myPool->rejectCustomer = TRUE;
+			myPool->dispense = FALSE;
+			reject[ID - 1] = FALSE;
+		}
 		cs.Signal();
-		//
+
+		//TODO: is there any data to update while fuel is being dispensed
+		// get final data
+		ps.Wait();
+		struct transaction complete;
+		strcpy_s(complete.customerName, myPool->customerName);
+		complete.creditCard = myPool->creditCard;
+		complete.fuelType = myPool->fuelType;
+		complete.dispensedFuel = myPool->dispensedFuel;
+		complete.finalCost = myPool->finalCost;
+		complete.endTime = myPool->transactionEndTime;
+		cs.Signal();
+
+		screenMutex.Wait();
+		MOVE_CURSOR(0, 16);
+		TEXT_COLOUR(15, 0);
+		printf("%s at Pump %d paid %.2f for %.1f L of \n", myPool->customerName, ID);
+		screenMutex.Signal();
 	}
 
-	return 0;									// terminate child thread
+	return 0;									
 }
 
-UINT __stdcall fuelTankThread(void *args)			// args points to any data passed to the child thread
+UINT __stdcall fuelTankThread(void *args)			
 {
 	while (1){
 		for (int i = 0; i < NTANKS; i++){
@@ -97,10 +183,13 @@ int main()
 	printf("Creating pump threads...\n");
 
 	CThread *pumpThreads[NPUMPS];
+
 	int IDs[NPUMPS];
 	for (int i = 0; i < NPUMPS; i++){
 		IDs[i] = i + 1;
 		pumpThreads[i] = new CThread(pumpThread, SUSPENDED, &IDs[i]);
+		dispense[i] = FALSE;
+		reject[i] = FALSE;
 	}
 
 	CThread fuelThread(fuelTankThread, SUSPENDED);
@@ -114,8 +203,14 @@ int main()
 		pumpThreads[i]->Resume();
 	}
 
-	end.Wait();
+	while (1){
+		TEST_FOR_KEYBOARD();
+		readKeyCmds();
+		Sleep(1000);
+	}
 
+	end.Wait();
+	
 	for (int i = 0; i < NPUMPS; i++){
 		pumpThreads[i]->Suspend();
 	}

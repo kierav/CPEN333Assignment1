@@ -6,7 +6,6 @@
 Car::Car(int carID, int designatedPump){
 	desPump = designatedPump;
 	myData.creditCard = rand() % 10000000000000000;
-	myData.customerName = carID;
 	// default values for fuel
 	myData.fuelType = OCT82;
 	myData.fuelAmount = 50;
