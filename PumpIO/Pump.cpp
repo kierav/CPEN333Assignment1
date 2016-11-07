@@ -107,6 +107,46 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		myPumpData->fuelAmount = currentCustomer.fuelAmount;
 		ps->Signal();
 		//printf("Pump %d produced customer data for GSC\n", myID);
+		Sleep(10);
+		// wait to dispense fuel
+		cs->Wait();
+		if (myPumpData->dispense == FALSE){
+			screenMutex->Wait();
+			MOVE_CURSOR(0, ((myID - 1) * 6));
+			printf("Customer rejected \n");
+			fflush(stdout);
+			screenMutex->Signal();
+		}
+		else{
+			myPumpData->dispensedFuel = 0;
+			float purchaseCost = tank->getCost(myPumpData->fuelType); // cost is set at time of dispense
+			while (myPumpData->fuelAmount - myPumpData->dispensedFuel >= 0.5){
+				if (tank->decrement(myPumpData->fuelType)){
+					myPumpData->dispensedFuel += DISPENSERATE;
+					screenMutex->Wait();
+					MOVE_CURSOR(0, ((myID - 1) * 6 + 2));
+					printf("L: %.1f\n", myPumpData->dispensedFuel);
+					printf("$: %.2f\n", purchaseCost*myPumpData->dispensedFuel);
+					fflush(stdout);
+					screenMutex->Signal();
+				}
+				else{
+					screenMutex->Wait();
+					MOVE_CURSOR(0, ((myID - 1) * 6 + 1));
+					printf("Cannot dispense any more fuel\n");
+					fflush(stdout);
+					screenMutex->Signal();
+					myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
+				}
+			}
+		}
+		screenMutex->Wait();
+		MOVE_CURSOR(0, ((myID - 1) * 6));
+		printf("Customer leaving Pump\n");
+		fflush(stdout);
+		screenMutex->Signal();
+		ps->Signal();
+
 		Sleep(2000);
 		pumpHoseReturned->Signal();
 		pumpExitQueue->Signal(); //wait to leave the pump

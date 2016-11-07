@@ -19,6 +19,14 @@ float FuelTank::read(int fuelType){
 	return desFuelLevel;
 }
 
+float FuelTank::getCost(int fuelType){
+	float cost;
+	mutex->Wait();
+	cost = tank->fuelCosts[fuelType];
+	mutex->Signal();
+	return cost;
+}
+
 void FuelTank::fill(int fuelType){
 	mutex->Wait();
 	tank->fuelLevels[fuelType] = TANKSIZE;
@@ -42,7 +50,7 @@ bool FuelTank::increment(int fuelType){
 	bool Status = FALSE;
 	if (tank->fuelLevels[fuelType] < TANKSIZE){
 		Status = TRUE;
-		tank->fuelLevels[fuelType] = tank->fuelLevels[fuelType] + 0.5;
+		tank->fuelLevels[fuelType] = tank->fuelLevels[fuelType] + DISPENSERATE;
 	}
 	mutex->Signal();
 	return Status;
@@ -53,7 +61,7 @@ bool FuelTank::decrement(int fuelType){
 	bool Status = FALSE;
 	if (tank->fuelLevels[fuelType] > 0){
 		Status = TRUE;
-		tank->fuelLevels[fuelType] = tank->fuelLevels[fuelType] - 0.5;
+		tank->fuelLevels[fuelType] = tank->fuelLevels[fuelType] - DISPENSERATE;
 	}
 	mutex->Signal();
 	return Status;
