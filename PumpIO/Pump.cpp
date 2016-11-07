@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sstream>
 #include "Pump.h"
+#include <ctime>
 
 Pump::Pump(int pumpID){
 	myID = pumpID;
@@ -140,10 +141,11 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 					printf("Cannot dispense any more fuel\n");
 					fflush(stdout);
 					screenMutex->Signal();
-					myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
 				}
 				Sleep(50);
 			}
+			myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
+			myPumpData->transactionEndTime = time(nullptr);
 		}
 		screenMutex->Wait();
 		MOVE_CURSOR(40, ((myID - 1) * 6));
