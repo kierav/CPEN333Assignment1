@@ -36,10 +36,17 @@ Pump::Pump(int pumpID){
 	entryName += oss.str();
 	string exitName = "ExitQueue";
 	exitName += oss.str();
+	string pumpHoseReturnedName = "PumpHoseReturned";
+	pumpHoseReturnedName += oss.str();
+	string pumpHoseRemovedName = "PumoHoseRemoved";
+	pumpHoseRemovedName += oss.str();
 	pumpEmpty = new CSemaphore(emptyName, 0, 1);
 	pumpFull = new CSemaphore(fullName, 0, 1);
 	pumpEntryQueue = new CSemaphore(entryName, 0, 1);
 	pumpExitQueue = new CSemaphore(exitName, 0, 1);
+	pumpHoseRemoved = new CSemaphore(pumpHoseRemovedName, 0, 1);
+	pumpHoseReturned = new CSemaphore(pumpHoseReturnedName, 0, 1);
+
 }
 Pump::~Pump(){
 	delete pumpEmpty;
@@ -54,6 +61,8 @@ Pump::~Pump(){
 	delete ps;
 	delete cs;
 	delete tank;
+	delete pumpHoseRemoved;
+	delete pumpHoseReturned;
 }
 
 int Pump::readCustomerPipelineThread(void *ThreadArgs){
@@ -75,7 +84,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 
 		//myPipeMutex->Wait();
 		myPipe->Read(&currentCustomer);
-		
+		pumpHoseRemoved->Wait();
 		screenMutex->Wait();
 		MOVE_CURSOR(0, ((myID - 1) * 6)); 
 		printf("[PUMP %i IN USE] \n"
@@ -99,7 +108,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		ps->Signal();
 		//printf("Pump %d produced customer data for GSC\n", myID);
 		Sleep(2000);
-		
+		pumpHoseReturned->Signal();
 		pumpExitQueue->Signal(); //wait to leave the pump
 		pumpEmpty->Wait(); //signal the pump is free
 	}
