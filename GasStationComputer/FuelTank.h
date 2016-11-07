@@ -15,7 +15,7 @@ private:
 public:
 	// constructor and destructor
 	FuelTank();
-	~FuelTank(){ delete mutex; delete tankDataPool; }
+	~FuelTank(){ delete mutex; delete tankDataPool; delete tank; }
 	float read(int fuelType);
 	void fill(int fuelType);
 	bool dispense(int fuelType, float fuelAmount);

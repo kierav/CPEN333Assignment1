@@ -26,6 +26,7 @@ private:
 
 public:
 	Pump(int pumpID);
+	~Pump();
 	int readCustomerPipelineThread(void *ThreadArgs);
 	int displayPumpDataThread(void *ThreadArgs);
 };

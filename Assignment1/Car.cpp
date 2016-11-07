@@ -6,6 +6,7 @@
 Car::Car(char *name, int designatedPump){
 	desPump = designatedPump;
 	myData.creditCard = rand() % 10000000000000000;
+	strcpy_s(myData.customerName, name);
 	// default values for fuel
 	myData.fuelType = OCT82;
 	myData.fuelAmount = 50;
@@ -47,12 +48,22 @@ int Car::main(void){
 	pumpFull->Signal(); //indicate we are using the pump
 
 	//send the data
-	myPipeMutex->Wait();
 	myPipe->Write(&myData);
-	myPipeMutex->Signal();
+	//myPipeMutex->Signal();
 	printf("Customer %s has swiped his car at Pump %d ... \n", myData.customerName, desPump);
+	Sleep(1000);
+	if (myData.fuelType == OCT82)
+		printf("Customer %s has selected fuel grade OCT82... \n", myData.customerName);
+	else if (myData.fuelType == OCT87)
+		printf("Customer %s has selected fuel grade OCT87... \n", myData.customerName);
+	else if (myData.fuelType == OCT92)
+		printf("Customer %s has selected fuel grade OCT92... \n", myData.customerName);
+	else if (myData.fuelType == OCT97)
+		printf("Customer %s has selected fuel grade OCT97... \n", myData.customerName);
+	Sleep(1000);
+	printf("Customer %s has removed gas hose and is awaiting GSC approval ... \n", myData.customerName, desPump);
+
 	//printf("Writing customer data to Pump %d...\n", desPump);
-	printf("Pipe got closed\n");
 
 	pumpExitQueue->Wait(); //wait to leave the pump
 	pumpEmpty->Signal(); //signal the pump is free
