@@ -29,10 +29,16 @@ Car::Car(char *name, int designatedPump){
 	entryName += oss.str();
 	string exitName = "ExitQueue";
 	exitName += oss.str();
+	string pumpHoseReturnedName = "PumpHoseReturned";
+	pumpHoseReturnedName += oss.str();
+	string pumpHoseRemovedName = "PumoHoseRemoved";
+	pumpHoseRemovedName += oss.str();
 	pumpEmpty = new CSemaphore(emptyName, 0, 1);
 	pumpFull = new CSemaphore(fullName, 0, 1);
 	pumpEntryQueue = new CSemaphore(entryName, 0, 1);
 	pumpExitQueue = new CSemaphore(exitName, 0, 1);
+	pumpHoseRemoved = new CSemaphore(pumpHoseRemovedName, 0, 1);
+	pumpHoseReturned = new CSemaphore(pumpHoseReturnedName, 0, 1);
 }
 
 void Car::setDesFuel(float maxDesFuel){
@@ -61,8 +67,9 @@ int Car::main(void){
 	else if (myData.fuelType == OCT97)
 		printf("Customer %s has selected fuel grade OCT97... \n", myData.customerName);
 	Sleep(1000);
+	pumpHoseRemoved->Signal();
 	printf("Customer %s has removed gas hose and is awaiting GSC approval ... \n", myData.customerName, desPump);
-
+	pumpHoseReturned->Wait();
 	//printf("Writing customer data to Pump %d...\n", desPump);
 
 	pumpExitQueue->Wait(); //wait to leave the pump
@@ -76,5 +83,6 @@ Car::~Car(){
 	delete pumpEmpty;
 	delete pumpEntryQueue;
 	delete pumpExitQueue;
-
+	delete pumpHoseRemoved;
+	delete pumpHoseReturned;
 }

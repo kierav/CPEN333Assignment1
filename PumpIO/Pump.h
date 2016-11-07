@@ -22,6 +22,8 @@ private:
 	CSemaphore *pumpFull;
 	CSemaphore *pumpEntryQueue;
 	CSemaphore *pumpExitQueue;
+	CSemaphore *pumpHoseRemoved;
+	CSemaphore *pumpHoseReturned;
 	FuelTank *tank;
 
 public:

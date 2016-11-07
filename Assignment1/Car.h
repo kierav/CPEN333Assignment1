@@ -13,6 +13,8 @@ private:
 	CSemaphore *pumpFull;
 	CSemaphore *pumpEntryQueue;
 	CSemaphore *pumpExitQueue;
+	CSemaphore *pumpHoseRemoved;
+	CSemaphore *pumpHoseReturned;
 	CMutex *myPipeMutex;
 public:
 	Car(char *name, int desPump);
