@@ -17,6 +17,7 @@ public:
 	FuelTank();
 	~FuelTank(){ delete mutex; delete tankDataPool; }
 	float read(int fuelType);
+	float getCost(int fuelType);
 	void fill(int fuelType);
 	bool dispense(int fuelType, float fuelAmount);
 	bool increment(int fuelType);

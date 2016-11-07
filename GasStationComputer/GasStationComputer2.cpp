@@ -1,6 +1,8 @@
 #include 	<stdio.h>
 #include	<iostream>
 #include	<sstream>
+#include	<conio.h>
+#include	<ctype.h>
 #include	<list>
 #include 	"C:\RTExamples\rt.h"			
 #include	"../Constants.h"
@@ -15,14 +17,18 @@ list<struct transaction> history;
 void drawFuel(int fuelTank, float amount){
 	int numBars = int(amount / TANKSIZE * 10);
 	screenMutex.Wait();
+	CURSOR_OFF();
 	if (numBars <= 2)
 		TEXT_COLOUR(12, 0);
 	else
 		TEXT_COLOUR(10, 0);
-	MOVE_CURSOR(6 + fuelTank * 14, 12);
+	MOVE_CURSOR(6 + fuelTank * 14, 11);
 	for (int i = 0; i < numBars; i++){
 		cout << "|";
 	}
+	TEXT_COLOUR(15, 0);
+	MOVE_CURSOR(0, 26);
+	CURSOR_ON();
 	screenMutex.Signal();
 }
 
@@ -42,19 +48,21 @@ void setUpScreen(){
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	MOVE_CURSOR(0, 20);
 	cout << "KEYBOARD Commands:" << endl;
-	cout << "\nD + i: dispense fuel to pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "\nQ + i: reject customer at pump i (0 to" << NPUMPS << ")" << endl;
-	cout << "\nR + i: refill fuel tank i (0 to" << NTANKS << ")" << endl;
-	cout << "\nC + i: change cost of fuel tank i (0 to" << NTANKS << ")" << endl;
-	cout << "\nS + 1: display all transactions until now" << endl;
+	cout << "D + i: dispense fuel to pump i (0 to" << NPUMPS << ")" << endl;
+	cout << "Q + i: reject customer at pump i (0 to" << NPUMPS << ")" << endl;
+	cout << "R + i: refill fuel tank i (0 to" << NTANKS << ")" << endl;
+	cout << "C + i: change cost of fuel tank i (0 to" << NTANKS << ")" << endl;
+	cout << "S + 1: display all transactions until now" << endl;
+	CURSOR_ON();
 }
 
 void readKeyCmds(){
 	// one key has already been pressed
 	int cmd1;
 	int cmd2;
-	cmd1 = _getch();
-	cmd2 = _getch();
+	cmd1 = _getche();
+	cmd1 = toupper(cmd1);
+	cmd2 = _getche();
 	float cost;
 
 	switch (cmd1){
@@ -74,7 +82,7 @@ void readKeyCmds(){
 	case 'C':
 		screenMutex.Wait();
 		TEXT_COLOUR(15, 0);
-		MOVE_CURSOR(0, 25);
+		MOVE_CURSOR(0, 27);
 		cout << "Enter new cost:" << endl;
 		cin >> cost; //TODO: maybe make this safer
 		screenMutex.Signal();
@@ -87,10 +95,15 @@ void readKeyCmds(){
 		screenMutex.Wait();
 		TEXT_COLOUR(15, 0);
 		MOVE_CURSOR(0, 26);
-		cout << "Invalid command" << endl;
+		cout << "Invalid command: " << cmd1 << " + " << cmd2 << endl;
 		screenMutex.Signal();
 	}
 
+	Sleep(300);
+	screenMutex.Wait();
+	MOVE_CURSOR(0, 26);
+	fflush(stdin);
+	screenMutex.Signal();
 }
 
 UINT __stdcall pumpThread(void *args)			// args points to any data passed to the child thread
@@ -206,7 +219,6 @@ int main()
 	while (1){
 		TEST_FOR_KEYBOARD();
 		readKeyCmds();
-		Sleep(1000);
 	}
 
 	end.Wait();
