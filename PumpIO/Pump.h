@@ -18,6 +18,10 @@ private:
 	CMutex *screenMutex;
 	CSemaphore *ps;
 	CSemaphore *cs;
+	CSemaphore *pumpEmpty;
+	CSemaphore *pumpFull;
+	CSemaphore *pumpEntryQueue;
+	CSemaphore *pumpExitQueue;
 	FuelTank *tank;
 
 public:

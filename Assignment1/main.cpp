@@ -3,20 +3,19 @@
 #include "../Constants.h"
 #include "Car.h"
 
+char* customernames[] = { "Matt", "Kiera", "Gus","Riley","Ben","Todd","Doug","John","Darrell","Denice" };
 
 int main(void){
 	CRendezvous start("StartRendezvous", 3);
 	CRendezvous end("EndRendezvous", 3);
 
 	printf("Creating Child Processes.....\n");
-
-	CProcess GSC("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
+	CProcess GSC("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window				
 		ACTIVE						// process is active immediately
 		);
-
-	CProcess pumpIO("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
+	CProcess pumpIO("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window					
 		ACTIVE							// process is active immediately
@@ -30,12 +29,25 @@ int main(void){
 	start.Wait();
 
 	// create a car 
-	Car car1(1, 2);
+	Car *cars[NUM_CUSTOMERS];
+	int i;
+	for (i = 0; i < NUM_CUSTOMERS; i++){
+		cars[i] = new Car(customernames[i], (i % 4) + 1);
+		cars[i]->setDesFuel(30 + (5 * i));
+		cars[i]->Resume();
+		
+	}
+	for (i = 0; i < NUM_CUSTOMERS; i++){
+		cars[i]->WaitForThread();
+	}
+	/*
+	Car car1("MattsCar", 2);
 	car1.setDesFuel(30);
 	car1.setFuelGrade(OCT87);
 	car1.Resume();
 
 	car1.WaitForThread();
+	*/
 	Sleep(2000);
 	printf("Press RETURN to end...\n");
 	getchar();
@@ -48,5 +60,9 @@ int main(void){
 	printf("Waiting For Child2 to Terminate.....\n");
 	pumpIO.WaitForProcess();					// wait for the child process to end
 
+	//delete cars array pointer to prevent memory leaks
+	for (i = 0; i < NUM_CUSTOMERS; i++){
+		delete cars[i];
+	}
 	return 0;
 }

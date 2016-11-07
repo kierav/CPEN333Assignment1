@@ -11,12 +11,14 @@
 #define TANKSIZE 500
 #define MINLEVEL 200
 #define DISPENSERATE 0.5
+#define MAX_NAME_LENGTH 20
+#define NUM_CUSTOMERS 10
 
 #define CARFUELTANK 70
 
 struct pumpData {
 	int pumpID;
-	int customerName;
+	char customerName[MAX_NAME_LENGTH];
 	int creditCard;
 	int fuelType;
 	float fuelAmount;
@@ -30,7 +32,7 @@ struct fuelTankData {
 };
 
 struct customerData {
-	int customerName;
+	char customerName[MAX_NAME_LENGTH];
 	int creditCard;
 	int fuelType;
 	float fuelAmount;

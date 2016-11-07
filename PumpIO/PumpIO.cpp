@@ -8,7 +8,7 @@ int main()
 	CRendezvous end("EndRendezvous", 3);
 	CMutex pumpScreenMutex("PumpScreen");
 
-	printf("Hello from pump IO process....\n");
+	//printf("Hello from pump IO process....\n");
 	Sleep(2000);
 	
 	// Create pump threads

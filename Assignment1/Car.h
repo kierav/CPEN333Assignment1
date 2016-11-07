@@ -9,9 +9,13 @@ private:
 	int desPump;
 	struct customerData myData;
 	CTypedPipe<struct customerData> *myPipe;
+	CSemaphore *pumpEmpty;
+	CSemaphore *pumpFull;
+	CSemaphore *pumpEntryQueue;
+	CSemaphore *pumpExitQueue;
 	CMutex *myPipeMutex;
 public:
-	Car(int carID, int desPump);
+	Car(char *name, int desPump);
 	void setDesFuel(float maxDesFuel);
 	void setFuelGrade(int fuelGrade);
 	int main(void);
