@@ -6,7 +6,6 @@
 Car::Car(char *name, int designatedPump){
 	desPump = designatedPump;
 	myData.creditCard = rand() % 10000000000000000;
-	strcpy_s(myData.customerName, name);
 	// default values for fuel
 	myData.fuelType = OCT82;
 	myData.fuelAmount = 50;

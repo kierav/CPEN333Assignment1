@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <sstream>
 #include "Pump.h"
-#include "../GasStationComputer/FuelTank.h"
 
 Pump::Pump(int pumpID){
 	myID = pumpID;
 	//printf("Pump %d being constructed...\n", myID);
 	screenMutex = new CMutex("PumpScreen");
-	tank = new FuelTank();
 	// pipeline for customer data, one customer at a time
 	myPipe = new CTypedPipe<struct customerData>(pumpName, 1);
 	myPipeMutex = new CMutex(pumpName, OWNED);
@@ -114,6 +112,8 @@ int Pump::main(void){
 	ClassThread<Pump> pipelineThread(this, &Pump::readCustomerPipelineThread, ACTIVE, NULL);
 	// create thread to display data on the screen
 	ClassThread<Pump> displayThread(this, &Pump::displayPumpDataThread, ACTIVE, NULL);
+
+	tank = new FuelTank();
 
 	Sleep(2000);
 	

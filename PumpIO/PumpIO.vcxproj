@@ -79,12 +79,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\..\..\RTExamples\rt.cpp" />
+    <ClCompile Include="..\GasStationComputer\FuelTank.cpp" />
     <ClCompile Include="Pump.cpp" />
     <ClCompile Include="PumpIO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\RTExamples\rt.h" />
     <ClInclude Include="..\Constants.h" />
+    <ClInclude Include="..\GasStationComputer\FuelTank.h" />
     <ClInclude Include="Pump.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
