@@ -60,29 +60,40 @@ Pump::~Pump(){
 	delete pumpHoseRemoved;
 	delete pumpHoseReturned;
 }
-
+void Pump::clearLine(int lineNumber)
+{
+	screenMutex->Wait();
+	MOVE_CURSOR(0, lineNumber);
+	printf("                                                    "
+		"                      \n");
+	screenMutex->Signal();
+}
 int Pump::readCustomerPipelineThread(void *ThreadArgs){
 	struct customerData currentCustomer;
 
 	Sleep(1000);
-
 	screenMutex->Wait();
+	TEXT_COLOUR(2 + (myID), 0);
 	MOVE_CURSOR(0, ((myID-1)*6));
 	printf("Polling pump %d...\n", myID);
 	fflush(stdout);
 	screenMutex->Signal();
-
+	for (int i = 0; i < 6; i++){
+		clearLine(((myID - 1) * 6 + i));
+	}
 	while(1){
 
 
 		pumpEntryQueue->Signal(); 
 		pumpFull->Wait();
-
+		
+		
 		//myPipeMutex->Wait();
 		myPipe->Read(&currentCustomer);
 		pumpHoseRemoved->Wait();
 		screenMutex->Wait();
 		MOVE_CURSOR(0, ((myID - 1) * 6)); 
+		TEXT_COLOUR(2 + (myID), 0);
 		printf("[PUMP %i IN USE] \n"
 				"Name:%s \n"
 				"Credit Card: %i \n"
@@ -108,6 +119,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		cs->Wait();
 		if (myPumpData->dispense != 1){
 			screenMutex->Wait();
+			TEXT_COLOUR(2 + (myID), 0);
 			MOVE_CURSOR(40, ((myID - 1) * 6));
 			printf("Customer rejected \n");
 			fflush(stdout);
@@ -116,6 +128,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		}
 		else{
 			screenMutex->Wait();
+			TEXT_COLOUR(2 + (myID), 0);
 			MOVE_CURSOR(40, ((myID - 1) * 6));
 			printf("Dispensing fuel \n");
 			fflush(stdout);
@@ -147,17 +160,31 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 			myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
 			myPumpData->transactionEndTime = time(nullptr);
 		}
-		screenMutex->Wait();
-		MOVE_CURSOR(40, ((myID - 1) * 6));
-		printf("Customer leaving Pump\n");
-		fflush(stdout);
-		screenMutex->Signal();
 		ps->Signal();
 
 		Sleep(2000);
 		pumpHoseReturned->Signal();
 		pumpExitQueue->Signal(); //wait to leave the pump
 		pumpEmpty->Wait(); //signal the pump is free
+		for (int i = 0; i < 6; i++){
+			clearLine(((myID - 1) * 6 + i));
+		}
+		screenMutex->Wait();
+		TEXT_COLOUR(2 + (myID), 0);
+		MOVE_CURSOR(0, ((myID - 1) * 6));
+		printf("No customer at pump awaiting new customer \n");
+		fflush(stdout);
+		for (int j = 0; j < 5; j++){
+			printf("... ");
+			Sleep(200);
+		}
+		printf("\n");
+		fflush(stdout);
+		screenMutex->Signal();
+
+		for (int i = 0; i < 6; i++){
+			clearLine(((myID - 1) * 6 + i));
+		}
 	}
 
 	return 0;

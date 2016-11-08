@@ -3,19 +3,21 @@
 #include "../Constants.h"
 #include "Car.h"
 
-char* customernames[] = { "Matt", "Kiera", "Gus","Riley","Ben","Todd","Doug","John","Darrell","Denice" };
-
+char* customernames[] = { "Matt", "Kiera", "Gus", "Riley", "Ben", "Todd", "Doug", "John", "Darrell", "Denice",
+"Lolo", "Jade", "Lucy", "Lutz", "Hacker9000", "Aaron", "Jack", "Peter", "Sal", "Barbara",
+"Etienne", "Calvin", "Ingrid", "Shane", "Lukas", "Jordan", "William", "Hayley", "Connor", "Jocelyn",
+"FalcoMaster", "Hacker2", "TheFlash", "Superman", "Ironman", "Hulk", "Gooseman", "Batman", "Spiderman", "Gerald" };
 int main(void){
 	CRendezvous start("StartRendezvous", 3);
 	CRendezvous end("EndRendezvous", 3);
 
 	printf("Creating Child Processes.....\n");
-	CProcess GSC("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
+	CProcess GSC("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window				
 		ACTIVE						// process is active immediately
 		);
-	CProcess pumpIO("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
+	CProcess pumpIO("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window					
 		ACTIVE							// process is active immediately

@@ -13,7 +13,7 @@ const int fuelTypes[] = { 82, 87, 92, 97 };
 #define MINLEVEL 200
 #define DISPENSERATE 0.5
 #define MAX_NAME_LENGTH 20
-#define NUM_CUSTOMERS 10
+#define NUM_CUSTOMERS 40
 
 #define CARFUELTANK 70
 #define MAX_NAME_LENGTH 20
