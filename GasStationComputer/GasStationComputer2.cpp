@@ -18,23 +18,30 @@ list<struct transaction> history;
 void drawFuel(int fuelTank, float amount){
 	int numBars = int(amount / TANKSIZE * 10);
 	screenMutex.Wait();
-	CURSOR_OFF();
 	if (numBars <= 2)
 		TEXT_COLOUR(12, 0);
 	else
 		TEXT_COLOUR(10, 0);
 	MOVE_CURSOR(6 + fuelTank * 14, 11);
 	for (int i = 0; i < numBars; i++){
-		cout << "|";
+		printf("|");
+		fflush(stdout);
 	}
 	MOVE_CURSOR(6 + fuelTank * 14, 12);
 	printf("%.2f", amount);
+	fflush(stdout);
 	TEXT_COLOUR(15, 0);
 	MOVE_CURSOR(0, 26);
-	CURSOR_ON();
 	screenMutex.Signal();
 }
-
+void clearLine(int lineNumber)
+{
+	screenMutex.Wait();
+	MOVE_CURSOR(0, lineNumber);
+	printf("                                                                               "
+		"                      \n");
+	screenMutex.Signal();
+}
 void setUpScreen(){
 	CLEAR_SCREEN();
 	CURSOR_OFF();
@@ -157,12 +164,30 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 	
 	while (1){
 		// wait for a customer to arrive
+		//screenMutex.Wait();
+		//MOVE_CURSOR(0, 16 + 2 * (ID - 1));
+		//printf("Hi there", myPool->customerName, ID);
+		//fflush(stdout);
+		//screenMutex.Signal();
+
 		ps.Wait();
+		clearLine(16 + (ID - 2));
 		screenMutex.Wait();
-		MOVE_CURSOR(0, 16);
-		printf("%s is at Pump %d\n", myPool->customerName, ID);
+		MOVE_CURSOR(0, 16 + (ID -2));
+		TEXT_COLOUR(2+(ID), 0);
+		printf("PUMP%d STATUS: ", ID);
+		printf("%s is at Pump %d", myPool->customerName, ID);
 		fflush(stdout);
-		printf("Credit Card: %d\n", myPool->creditCard);
+		printf(", Credit Card: %d", myPool->creditCard);
+		if (myPool->fuelType == OCT82)
+			printf(", Fuel Type: OCT82");
+		else if (myPool->fuelType == OCT87)
+			printf(", Fuel Type: OCT87");
+		else if (myPool->fuelType == OCT92)
+			printf(", Fuel Type: OCT92");
+		else if (myPool->fuelType == OCT97)
+			printf(", Fuel Type: OCT97");
+		printf(", Fuel Amount: %0.3f \n", myPool->fuelAmount);
 		fflush(stdout);
 		screenMutex.Signal();
 
@@ -174,8 +199,11 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 			myPool->dispense = 1;
 			dispense[ID - 1] = FALSE;
 			reject[ID - 1] = FALSE;
+			clearLine(16 + (ID - 2));
 			screenMutex.Wait();
-			MOVE_CURSOR(0, 16 + ID);
+			MOVE_CURSOR(0, 16 + (ID - 2));
+			TEXT_COLOUR(2 + (ID), 0); 
+			printf("PUMP%d STATUS: ", ID);
 			printf("Dispensing fuel at Pump %d\n",ID);
 			fflush(stdout);
 			screenMutex.Signal();
@@ -183,9 +211,13 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		else {
 			myPool->dispense = 0;
 			reject[ID - 1] = FALSE;
+			clearLine(16 + (ID - 2));
 			screenMutex.Wait();
-			MOVE_CURSOR(0, 16 + ID);
+			MOVE_CURSOR(0, 16 + (ID - 2));
+			TEXT_COLOUR(2 + (ID), 0); 
+			printf("PUMP%d STATUS: ", ID);
 			printf("Not dispensing fuel at Pump %d\n", ID);
+			fflush(stdout);
 			screenMutex.Signal();
 		}
 		cs.Signal();
@@ -203,11 +235,11 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		//record the complete transaction into history variable to display in RAM if needed
 		history.push_back(complete);
 		cs.Signal();
-
+		clearLine(16 + (ID - 2));
 		screenMutex.Wait();
-		MOVE_CURSOR(0, 16 + ID);
-		TEXT_COLOUR(15, 0);
-		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n",myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
+		MOVE_CURSOR(0, 16 + (ID - 2));
+		TEXT_COLOUR(2 + (ID), 0); 
+		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n", myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
 		fflush(stdout);
 		screenMutex.Signal();
 	}
@@ -220,7 +252,7 @@ UINT __stdcall fuelTankThread(void *args)
 	while (1){
 		for (int i = 0; i < NTANKS; i++){
 			drawFuel(i, myTank.read(i));
-			Sleep(2000);
+			Sleep(20);
 		}
 	}
 	return 0;
