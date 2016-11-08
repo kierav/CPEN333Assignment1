@@ -3,6 +3,7 @@
 #include	<sstream>
 #include	<conio.h>
 #include	<ctype.h>
+#include	<time.h>
 #include	<list>
 #include 	"C:\RTExamples\rt.h"			
 #include	"../Constants.h"
@@ -59,17 +60,21 @@ void setUpScreen(){
 }
 void printTransactionsHistory(){
 	screenMutex.Wait();
-	MOVE_CURSOR(0, 28);
+	MOVE_CURSOR(0, 30);
 	cout << "============================================ \n";
 	cout << "Transaction History for Today\n";
+	char timebuff[32];
+	struct tm newtime;
 	for (auto v : history)
 	{
+		_localtime64_s(&newtime, &v.endTime);
+		asctime_s(timebuff, 32, &newtime);
 		cout << "Name:" << v.customerName;
 		cout << ", Credit Card:" << v.creditCard;
 		cout << ", Dispensed Fuel:" << v.dispensedFuel;
 		cout << ", Final Cost:" << v.finalCost;
 		cout << ", Fuel Type:" << v.fuelType;
-		cout << ", End Time:" << v.endTime << "\n";
+		cout << ", End Time:" << timebuff << "\n";
 	}
 
 	screenMutex.Signal();

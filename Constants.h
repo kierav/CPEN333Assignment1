@@ -26,7 +26,7 @@ struct pumpData {
 	int dispense;
 	float dispensedFuel;
 	float finalCost;
-	int transactionEndTime;
+	time_t transactionEndTime;
 };
 
 struct fuelTankData {
@@ -47,7 +47,7 @@ struct transaction {
 	int fuelType;
 	float dispensedFuel;
 	float finalCost;
-	int endTime;
+	time_t endTime;
 };
 
 #endif
