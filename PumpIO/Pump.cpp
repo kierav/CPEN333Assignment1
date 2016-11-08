@@ -146,6 +146,8 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 					printf("L: %.1f\n", myPumpData->dispensedFuel);
 					MOVE_CURSOR(40, ((myID - 1) * 6 + 3));
 					printf("$: %.2f\n", purchaseCost*myPumpData->dispensedFuel);
+					MOVE_CURSOR(40, ((myID - 1) * 6 + 4));
+					printf("T: OCT%i\n", fuelTypes[myPumpData->fuelType]);
 					fflush(stdout);
 					screenMutex->Signal();
 				}
