@@ -156,7 +156,9 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		screenMutex.Wait();
 		MOVE_CURSOR(0, 16);
 		printf("%s is at Pump %d\n", myPool->customerName, ID);
+		fflush(stdout);
 		printf("Credit Card: %d\n", myPool->creditCard);
+		fflush(stdout);
 		screenMutex.Signal();
 
 		// dispense fuel or reject customer
@@ -170,6 +172,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 			screenMutex.Wait();
 			MOVE_CURSOR(0, 16 + ID);
 			printf("Dispensing fuel at Pump %d\n",ID);
+			fflush(stdout);
 			screenMutex.Signal();
 		}
 		else {
@@ -200,6 +203,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		MOVE_CURSOR(0, 16 + ID);
 		TEXT_COLOUR(15, 0);
 		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n",myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
+		fflush(stdout);
 		screenMutex.Signal();
 	}
 
