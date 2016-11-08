@@ -13,22 +13,31 @@ FuelTank myTank;
 CMutex screenMutex("GSCScreenMutex");
 bool dispense[NPUMPS];
 bool reject[NTANKS];
+bool flashFuel = FALSE;
 list<struct transaction> history; 
 
 void drawFuel(int fuelTank, float amount){
 	int numBars = int(amount / TANKSIZE * 10);
 	screenMutex.Wait();
 	CURSOR_OFF();
-	if (numBars <= 2)
-		TEXT_COLOUR(12, 0);
-	else
+	if (numBars > 2) {
 		TEXT_COLOUR(10, 0);
+	}
+	else if (flashFuel == FALSE) {
+		TEXT_COLOUR(12, 0);
+		flashFuel = TRUE;
+	}
+	else {
+		TEXT_COLOUR(0, 0);
+	}
 	MOVE_CURSOR(6 + fuelTank * 14, 11);
 	for (int i = 0; i < numBars; i++){
-		cout << "|";
+		printf("|");
+		fflush(stdout);
 	}
 	MOVE_CURSOR(6 + fuelTank * 14, 12);
 	printf("%.2f", amount);
+	fflush(stdout);
 	TEXT_COLOUR(15, 0);
 	MOVE_CURSOR(0, 26);
 	CURSOR_ON();
@@ -50,6 +59,7 @@ void setUpScreen(){
 	//	cout << "\n      __________    __________    __________    __________" << endl;
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	MOVE_CURSOR(0, 20);
+	TEXT_COLOUR(15, 0);
 	cout << "KEYBOARD Commands:" << endl;
 	cout << "D + i: dispense fuel to pump i (1 to " << NPUMPS << ")" << endl;
 	cout << "Q + i: reject customer at pump i (1 to " << NPUMPS << ")" << endl;
@@ -85,10 +95,11 @@ void readKeyCmds(){
 	int cmd2;
 	screenMutex.Wait();
 	MOVE_CURSOR(0, 26);
+	CURSOR_ON();
+	screenMutex.Signal();
 	cmd1 = _getche();
 	cmd1 = toupper(cmd1);
 	cmd2 = _getche() - '0' - 1;
-	screenMutex.Signal();
 	float cost;
 
 	switch (cmd1){
@@ -114,7 +125,6 @@ void readKeyCmds(){
 		myTank.setCost(cmd2, cost);
 		break;
 	case 'S':
-		//TODO
 		printTransactionsHistory();
 		break;
 	default:
@@ -159,7 +169,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		// wait for a customer to arrive
 		ps.Wait();
 		screenMutex.Wait();
-		MOVE_CURSOR(0, 16);
+		MOVE_CURSOR(0, 14 + ID);
 		printf("%s is at Pump %d\n", myPool->customerName, ID);
 		printf("Credit Card: %d\n", myPool->creditCard);
 		screenMutex.Signal();
@@ -173,7 +183,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 			dispense[ID - 1] = FALSE;
 			reject[ID - 1] = FALSE;
 			screenMutex.Wait();
-			MOVE_CURSOR(0, 16 + ID);
+			MOVE_CURSOR(0, 14 + ID);
 			printf("Dispensing fuel at Pump %d\n",ID);
 			screenMutex.Signal();
 		}
@@ -216,7 +226,7 @@ UINT __stdcall fuelTankThread(void *args)
 	while (1){
 		for (int i = 0; i < NTANKS; i++){
 			drawFuel(i, myTank.read(i));
-			Sleep(2000);
+			Sleep(100);
 		}
 	}
 	return 0;
