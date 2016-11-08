@@ -25,6 +25,7 @@ private:
 	CSemaphore *pumpHoseRemoved;
 	CSemaphore *pumpHoseReturned;
 	FuelTank *tank;
+	void clearLine(int);
 
 public:
 	Pump(int pumpID);

@@ -186,7 +186,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		MOVE_CURSOR(0, 16 + (ID -2));
 		TEXT_COLOUR(2+(ID), 0);
 		printf("PUMP%d STATUS: ", ID);
-		printf("%s is at Pump %d", myPool->customerName, ID);
+		printf("N: %s", myPool->customerName);
 		fflush(stdout);
 		printf(", Card: %d", myPool->creditCard);
 		if (myPool->fuelType == OCT82)
@@ -249,6 +249,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		screenMutex.Wait();
 		MOVE_CURSOR(0, 16 + (ID - 2));
 		TEXT_COLOUR(2 + (ID), 0); 
+		printf("PUMP%d STATUS: ", ID);
 		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n", myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
 		fflush(stdout);
 		screenMutex.Signal();
