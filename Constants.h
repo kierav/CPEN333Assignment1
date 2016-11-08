@@ -8,6 +8,7 @@
 #define OCT92 2
 #define OCT97 3
 #define NTANKS 4
+const int fuelTypes[] = { 82, 87, 92, 97 };
 #define TANKSIZE 500
 #define MINLEVEL 200
 #define DISPENSERATE 0.5

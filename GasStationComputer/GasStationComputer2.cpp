@@ -32,12 +32,18 @@ void drawFuel(int fuelTank, float amount){
 		flashFuel = FALSE;
 	}
 	MOVE_CURSOR(6 + fuelTank * 14, 11);
-	for (int i = 0; i < numBars; i++){
-		printf("|");
-		fflush(stdout);
+	for (int i = 0; i < 10; i++){
+		if (i < numBars) {
+			printf("|");
+			fflush(stdout);
+		}
+		else {
+			printf(" ");
+			fflush(stdout);
+		}
 	}
 	MOVE_CURSOR(6 + fuelTank * 14, 12);
-	printf("%.2f", amount);
+	printf("%.2f L", amount);
 	fflush(stdout);
 	TEXT_COLOUR(15, 0);
 	MOVE_CURSOR(0, 26);
@@ -121,15 +127,19 @@ void readKeyCmds(){
 		}
 		break;
 	case 'R':
-		myTank.fill(cmd2);
+		if (cmd2 < NTANKS && cmd2 >= 0){
+			myTank.fill(cmd2);
+		}
 		break;
 	case 'C':
-		screenMutex.Wait();
-		MOVE_CURSOR(0, 27);
-		cout << "Enter new cost:" << endl;
-		cin >> cost; //TODO: maybe make this safer
-		screenMutex.Signal();
-		myTank.setCost(cmd2, cost);
+		if (cmd2 < NTANKS && cmd2 >= 0){
+			screenMutex.Wait();
+			MOVE_CURSOR(0, 27);
+			cout << "Enter new cost:" << endl;
+			cin >> cost; //TODO: maybe make this safer
+			screenMutex.Signal();
+			myTank.setCost(cmd2, cost);
+		}
 		break;
 	case 'S':
 		printTransactionsHistory();
@@ -144,13 +154,13 @@ void readKeyCmds(){
 
 	Sleep(300);
 	screenMutex.Wait();
+	fflush(stdin);
 	MOVE_CURSOR(0, 26);
 	CURSOR_OFF();
 	printf("                      \n                         \n                  \n");
 	fflush(stdout);
 	MOVE_CURSOR(0, 26);
 	CURSOR_ON();
-	fflush(stdin);
 	screenMutex.Signal();
 }
 
@@ -249,7 +259,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		screenMutex.Wait();
 		MOVE_CURSOR(0, 16 + (ID - 2));
 		TEXT_COLOUR(2 + (ID), 0); 
-		printf("%s at Pump %d paid %.2f for %.1f L of fuel type %d\n", myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
+		printf("PUMP %d STATUS: %s paid %.2f for %.1f L of fuel type %d\n", myPool->customerName, ID, myPool->finalCost, myPool->dispensedFuel, myPool->fuelType);
 		fflush(stdout);
 		screenMutex.Signal();
 	}
@@ -301,6 +311,10 @@ int main()
 	}
 
 	while (1){
+		screenMutex.Wait();
+		MOVE_CURSOR(0, 26);
+		CURSOR_ON();
+		screenMutex.Signal();
 		TEST_FOR_KEYBOARD();
 		readKeyCmds();
 	}
