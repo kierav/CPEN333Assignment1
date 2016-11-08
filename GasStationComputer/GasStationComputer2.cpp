@@ -21,12 +21,15 @@ void drawFuel(int fuelTank, float amount){
 	screenMutex.Wait();
 	CURSOR_OFF();
 	if (numBars > 2) {
+		TEXT_COLOUR(10, 0);
+	}
 	else if (flashFuel == FALSE) {
 		TEXT_COLOUR(12, 0);
 		flashFuel = TRUE;
 	}
 	else {
 		TEXT_COLOUR(0, 0);
+		flashFuel = FALSE;
 	}
 	MOVE_CURSOR(6 + fuelTank * 14, 11);
 	for (int i = 0; i < numBars; i++){
@@ -44,7 +47,7 @@ void clearLine(int lineNumber)
 {
 	screenMutex.Wait();
 	MOVE_CURSOR(0, lineNumber);
-	printf("                                                                               "
+	printf("                                                    "
 		"                      \n");
 	screenMutex.Signal();
 }
@@ -185,16 +188,16 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		printf("PUMP%d STATUS: ", ID);
 		printf("%s is at Pump %d", myPool->customerName, ID);
 		fflush(stdout);
-		printf(", Credit Card: %d", myPool->creditCard);
+		printf(", Card: %d", myPool->creditCard);
 		if (myPool->fuelType == OCT82)
-			printf(", Fuel Type: OCT82");
+			printf(", Type: OCT82");
 		else if (myPool->fuelType == OCT87)
-			printf(", Fuel Type: OCT87");
+			printf(", Type: OCT87");
 		else if (myPool->fuelType == OCT92)
-			printf(", Fuel Type: OCT92");
+			printf(", Type: OCT92");
 		else if (myPool->fuelType == OCT97)
-			printf(", Fuel Type: OCT97");
-		printf(", Fuel Amount: %0.3f \n", myPool->fuelAmount);
+			printf(", Type: OCT97");
+		printf(", Amount: %0.3f \n", myPool->fuelAmount);
 		fflush(stdout);
 		screenMutex.Signal();
 
