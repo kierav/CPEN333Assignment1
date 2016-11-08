@@ -72,8 +72,9 @@ void setUpScreen(){
 	TEXT_COLOUR(10, 0);
 	//	cout << "\n      __________    __________    __________    __________" << endl;
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
-	MOVE_CURSOR(0, 20);
 	TEXT_COLOUR(15, 0);
+	cout << "\n\n PUMPS " << endl;
+	MOVE_CURSOR(0, 20);
 	cout << "KEYBOARD Commands:" << endl;
 	cout << "D + i: dispense fuel to pump i (1 to " << NPUMPS << ")" << endl;
 	cout << "Q + i: reject customer at pump i (1 to " << NPUMPS << ")" << endl;
@@ -214,7 +215,15 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		screenMutex.Signal();
 		if (myTank.read(myPool->fuelType) < 200){
 			// automatically reject customer
+			//screenMutex.Wait();
+			//MOVE_CURSOR(0, 16 + (ID - 2));
+			//TEXT_COLOUR(12, 0);
+			//printf("PUMP%d STATUS: Not enough fuel, rejecting customer", ID);
+			//fflush(stdout);
+			//screenMutex.Signal();
+			//Sleep(1000);
 			reject[ID - 1] = TRUE;
+			dispense[ID - 1] = FALSE;
 		}
 
 		// dispense fuel or reject customer
