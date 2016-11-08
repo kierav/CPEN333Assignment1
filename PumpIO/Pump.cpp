@@ -141,6 +141,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 				if (tank->decrement(myPumpData->fuelType)){
 					myPumpData->dispensedFuel += DISPENSERATE;
 					screenMutex->Wait();
+					TEXT_COLOUR(2 + (myID), 0);
 					MOVE_CURSOR(40, ((myID - 1) * 6 + 2));
 					printf("L: %.1f\n", myPumpData->dispensedFuel);
 					MOVE_CURSOR(40, ((myID - 1) * 6 + 3));
@@ -150,6 +151,7 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 				}
 				else{
 					screenMutex->Wait();
+					TEXT_COLOUR(2 + (myID), 0);
 					MOVE_CURSOR(40, ((myID - 1) * 6 + 1));
 					printf("Cannot dispense any more fuel\n");
 					fflush(stdout);
@@ -185,6 +187,13 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 		for (int i = 0; i < 6; i++){
 			clearLine(((myID - 1) * 6 + i));
 		}
+		screenMutex->Wait();
+		TEXT_COLOUR(2 + (myID), 0);
+		MOVE_CURSOR(0, ((myID - 1) * 6));
+
+		printf("[PUMP %i VACANT] \n", myID);
+		fflush(stdout);
+		screenMutex->Signal();
 	}
 
 	return 0;
