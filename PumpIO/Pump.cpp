@@ -85,12 +85,6 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 
 		pumpEntryQueue->Signal(); 
 		screenMutex->Wait();
-		MOVE_CURSOR(0, ((myID - 1) * 6));
-		TEXT_COLOUR(2 + (myID), 0);
-		printf("Customer is arriving...\n");
-		fflush(stdout);
-		screenMutex->Signal();
-		Sleep(200);
 		pumpFull->Wait();
 		myPipeMutex->Wait();
 
@@ -100,6 +94,14 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 			myPipeMutex->Wait();
 		}
 		myPipe->Read(&currentCustomer);
+
+		MOVE_CURSOR(0, ((myID - 1) * 6));
+		TEXT_COLOUR(2 + (myID), 0);
+		printf("Customer is arriving...\n");
+		fflush(stdout);
+		screenMutex->Signal();
+		Sleep(300);
+
 		screenMutex->Wait();
 		MOVE_CURSOR(0, ((myID - 1) * 6)); 
 		TEXT_COLOUR(2 + (myID), 0);
