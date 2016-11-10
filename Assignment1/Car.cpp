@@ -54,8 +54,11 @@ int Car::main(void){
 	pumpFull->Signal(); //indicate we are using the pump
 
 	//send the data
+	myPipeMutex->Wait();
 	myPipe->Write(&myData);
-	//myPipeMutex->Signal();
+	myPipeMutex->Signal();
+
+
 	printf("Customer %s has swiped his card at Pump %d ... \n", myData.customerName, desPump);
 	Sleep(1000);
 	if (myData.fuelType == OCT82)
@@ -74,6 +77,8 @@ int Car::main(void){
 
 	pumpExitQueue->Wait(); //wait to leave the pump
 	pumpEmpty->Signal(); //signal the pump is free
+
+
 	return 0;
 }
 Car::~Car(){

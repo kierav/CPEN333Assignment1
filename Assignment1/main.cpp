@@ -12,12 +12,12 @@ int main(void){
 	CRendezvous end("EndRendezvous", 3);
 
 	printf("Creating Child Processes.....\n");
-	CProcess GSC("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
+	CProcess GSC("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\GasStationComputer.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window				
 		ACTIVE						// process is active immediately
 		);
-	CProcess pumpIO("C:\\Users\\Matt Cordoba\\Dropbox\\CPEN 333\\A1MCKV\\CPEN333Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
+	CProcess pumpIO("C:\\Users\\person\\Documents\\VisualStudio2013\\Projects\\Assignment1\\Debug\\PumpIO.exe 12",	// pathlist to child program executable				
 		NORMAL_PRIORITY_CLASS,			// priority
 		OWN_WINDOW,						// process in the same window					
 		ACTIVE							// process is active immediately
@@ -34,7 +34,7 @@ int main(void){
 	Car *cars[NUM_CUSTOMERS];
 	int i;
 	for (i = 0; i < NUM_CUSTOMERS; i++){
-		cars[i] = new Car(customernames[i], (i % 4) + 1);
+		cars[i] = new Car(customernames[i], (i % NPUMPS) + 1);
 		cars[i]->setDesFuel(rand() % 71);
 		cars[i]->setFuelGrade(rand() % 4);
 		cars[i]->Resume();

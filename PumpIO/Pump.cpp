@@ -22,7 +22,7 @@ Pump::Pump(int pumpID){
 	screenMutex = new CMutex("PumpScreen");
 	// pipeline for customer data, one customer at a time
 	myPipe = new CTypedPipe<struct customerData>(pumpName, 1);
-	myPipeMutex = new CMutex(pumpName, OWNED);
+	myPipeMutex = new CMutex(pumpName);
 
 	//set up semaphores for queing at the pump
 	string emptyName = "Empty";
@@ -83,18 +83,27 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 	}
 	while(1){
 
-
 		pumpEntryQueue->Signal(); 
+		screenMutex->Wait();
+		MOVE_CURSOR(0, ((myID - 1) * 6));
+		TEXT_COLOUR(2 + (myID), 0);
+		printf("Customer is arriving...\n");
+		fflush(stdout);
+		screenMutex->Signal();
+		Sleep(200);
 		pumpFull->Wait();
-		
-		
-		//myPipeMutex->Wait();
+		myPipeMutex->Wait();
+
+		while (myPipe->TestForData() < 1){
+			myPipeMutex->Signal();
+
+			myPipeMutex->Wait();
+		}
 		myPipe->Read(&currentCustomer);
-		pumpHoseRemoved->Wait();
 		screenMutex->Wait();
 		MOVE_CURSOR(0, ((myID - 1) * 6)); 
 		TEXT_COLOUR(2 + (myID), 0);
-		printf("[PUMP %i IN USE] \n"
+		printf("[PUMP %i IN USE]             \n"
 				"Name:%s \n"
 				"Credit Card: %i \n"
 				"Fuel Type: %i \n"
@@ -124,13 +133,22 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 			printf("Customer rejected \n");
 			fflush(stdout);
 			screenMutex->Signal();
-			Sleep(500);
+			Sleep(700);
 		}
 		else{
+			pumpHoseRemoved->Wait();
 			screenMutex->Wait();
 			TEXT_COLOUR(2 + (myID), 0);
 			MOVE_CURSOR(40, ((myID - 1) * 6));
-			printf("Dispensing fuel \n");
+			printf("Removing gas hose from pump... \n");
+			fflush(stdout);
+			screenMutex->Signal();
+			Sleep(700);
+
+			screenMutex->Wait();
+			TEXT_COLOUR(2 + (myID), 0);
+			MOVE_CURSOR(40, ((myID - 1) * 6));
+			printf("Dispensing fuel...               \n");
 			fflush(stdout);
 			screenMutex->Signal();
 			Sleep(500);
@@ -163,13 +181,32 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 			}
 			myPumpData->finalCost = purchaseCost*myPumpData->dispensedFuel;
 			myPumpData->transactionEndTime = time(nullptr);
+
+			screenMutex->Wait();
+			TEXT_COLOUR(2 + (myID), 0);
+			MOVE_CURSOR(40, ((myID - 1) * 6));
+			printf("Returning gas hose to pump...            \n");
+			fflush(stdout);
+			screenMutex->Signal();
+			pumpHoseReturned->Signal();
+			Sleep(700);
 		}
 		ps->Signal();
 
 		Sleep(2000);
-		pumpHoseReturned->Signal();
 		pumpExitQueue->Signal(); //wait to leave the pump
 		pumpEmpty->Wait(); //signal the pump is free
+
+		screenMutex->Wait();
+		TEXT_COLOUR(2 + (myID), 0);
+		MOVE_CURSOR(40, ((myID - 1) * 6));
+		printf("Customer is leaving...            \n");
+		fflush(stdout);
+		screenMutex->Signal();
+		Sleep(700);
+
+		myPipeMutex->Signal();
+
 		for (int i = 0; i < 6; i++){
 			clearLine(((myID - 1) * 6 + i));
 		}
@@ -201,25 +238,16 @@ int Pump::readCustomerPipelineThread(void *ThreadArgs){
 	return 0;
 }
 
-int Pump::displayPumpDataThread(void *ThreadArgs){
-	//TODO: figure out what to put on this display
-	return 0;
-}
-
 int Pump::main(void){
 	//printf("Pump %d linked to fuel datapool at address %p...\n", myID, fuelData);
 	
 	// create thread to read pipeline in suspended state
 	ClassThread<Pump> pipelineThread(this, &Pump::readCustomerPipelineThread, ACTIVE, NULL);
-	// create thread to display data on the screen
-	ClassThread<Pump> displayThread(this, &Pump::displayPumpDataThread, ACTIVE, NULL);
 
 	tank = new FuelTank();
 
 	Sleep(2000);
 	
-	
-	displayThread.WaitForThread();
 	pipelineThread.WaitForThread();
 
 	return 0;

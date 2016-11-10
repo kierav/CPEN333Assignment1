@@ -47,14 +47,14 @@ void drawFuel(int fuelTank, float amount){
 	printf("%.2f L ", amount);
 	fflush(stdout);
 	TEXT_COLOUR(15, 0);
-	MOVE_CURSOR(0, 26);
+	MOVE_CURSOR(0, 22 + NPUMPS);
 	screenMutex.Signal();
 }
 void clearLine(int lineNumber)
 {
 	screenMutex.Wait();
 	MOVE_CURSOR(0, lineNumber);
-	printf("                                                    "
+	printf("                                                       "
 		"                      \n");
 	screenMutex.Signal();
 }
@@ -74,7 +74,7 @@ void setUpScreen(){
 	cout << "\n      ||||||||||    ||||||||||    ||||||||||    ||||||||||    " << endl;
 	TEXT_COLOUR(15, 0);
 	cout << "\n\n PUMPS " << endl;
-	MOVE_CURSOR(0, 20);
+	MOVE_CURSOR(0, 16 + NPUMPS);
 	cout << "KEYBOARD Commands:" << endl;
 	cout << "D + i: dispense fuel to pump i (1 to " << NPUMPS << ")" << endl;
 	cout << "Q + i: reject customer at pump i (1 to " << NPUMPS << ")" << endl;
@@ -85,7 +85,7 @@ void setUpScreen(){
 }
 void printTransactionsHistory(){
 	screenMutex.Wait();
-	MOVE_CURSOR(0, 30);
+	MOVE_CURSOR(0, 26 + NPUMPS);
 	cout << "============================================ \n";
 	cout << "Gross Profit for Today: $" << grossProfit << "\n";
 	cout << "Transaction History for Today\n";
@@ -109,13 +109,19 @@ void readKeyCmds(){
 	// one key has already been pressed
 	int cmd1;
 	int cmd2;
+	cmd1 = _getch();
 	screenMutex.Wait();
-	MOVE_CURSOR(0, 26);
+	MOVE_CURSOR(0, 22 + NPUMPS);
 	CURSOR_ON();
+	_putch(cmd1);
 	screenMutex.Signal();
-	cmd1 = _getche();
 	cmd1 = toupper(cmd1);
-	cmd2 = _getche() - '0' - 1;
+	cmd2 = _getch() - '0' - 1;
+	screenMutex.Wait();
+	MOVE_CURSOR(1, 22 + NPUMPS);
+	CURSOR_ON();
+	_putch(cmd2 + '0' + 1);
+	screenMutex.Signal();
 	float cost;
 
 	switch (cmd1){
@@ -149,7 +155,7 @@ void readKeyCmds(){
 		break;
 	default:
 		screenMutex.Wait();
-		MOVE_CURSOR(0, 27);
+		MOVE_CURSOR(0, 23 + NPUMPS);
 		printf("Invalid command");
 		fflush(stdout);
 		screenMutex.Signal();
@@ -158,11 +164,11 @@ void readKeyCmds(){
 	Sleep(300);
 	screenMutex.Wait();
 	fflush(stdin);
-	MOVE_CURSOR(0, 26);
+	MOVE_CURSOR(0, 22 + NPUMPS);
 	CURSOR_OFF();
 	printf("                      \n                         \n                  \n");
 	fflush(stdout);
-	MOVE_CURSOR(0, 26);
+	MOVE_CURSOR(0, 22 + NPUMPS);
 	CURSOR_ON();
 	screenMutex.Signal();
 }
@@ -199,7 +205,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 		MOVE_CURSOR(0, 16 + (ID -2));
 		TEXT_COLOUR(2+(ID), 0);
 		printf("PUMP%d STATUS: ", ID);
-		printf("N: %s", myPool->customerName);
+		printf("New: %s", myPool->customerName);
 		fflush(stdout);
 		printf(", Card: %d", myPool->creditCard);
 		if (myPool->fuelType == OCT82)
@@ -210,7 +216,7 @@ UINT __stdcall pumpThread(void *args)			// args points to any data passed to the
 			printf(", Type: OCT92");
 		else if (myPool->fuelType == OCT97)
 			printf(", Type: OCT97");
-		printf(", Amount: %0.3f \n", myPool->fuelAmount);
+		printf(", Amount: %0.2fL \n", myPool->fuelAmount);
 		fflush(stdout);
 		screenMutex.Signal();
 		if (myTank.read(myPool->fuelType) < 200){

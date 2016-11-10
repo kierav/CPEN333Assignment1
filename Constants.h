@@ -1,7 +1,7 @@
 #ifndef __Constants__
 #define __Constants__
 
-#define NPUMPS 4
+#define NPUMPS 5
 
 #define OCT82 0
 #define OCT87 1
